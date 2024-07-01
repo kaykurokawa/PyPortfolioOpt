@@ -1,15 +1,21 @@
 import os
 import tempfile
 
-import numpy as np
-import pandas as pd
 import matplotlib
 import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
 import pytest
 
+from pypfopt import (
+    CLA,
+    EfficientFrontier,
+    HRPOpt,
+    expected_returns,
+    plotting,
+    risk_models,
+)
 from tests.utilities_for_tests import get_data, setup_efficient_frontier
-from pypfopt import plotting, risk_models, expected_returns
-from pypfopt import HRPOpt, CLA, EfficientFrontier
 
 
 def test_correlation_plot():
@@ -66,10 +72,10 @@ def test_dendrogram_plot():
     hrp = HRPOpt(returns)
     with pytest.warns(RuntimeWarning) as w:
         ax = plotting.plot_dendrogram(hrp, show_tickers=False, showfig=False)
-        assert len(w) == 1
+        assert len(w) <= 2  # the second is FutureWarning if exists
         assert (
             str(w[0].message)
-            == "hrp param has not been optimized.  Attempting optimization."
+            == "hrp param has not been optimized. Attempting optimization."
         )
         assert len(ax.findobj()) > 60
         assert type(ax.findobj()[0]) == matplotlib.collections.LineCollection

@@ -13,13 +13,12 @@ import warnings
 from collections.abc import Iterable
 from typing import List
 
+import cvxpy as cp
 import numpy as np
 import pandas as pd
-import cvxpy as cp
 import scipy.optimize as sco
 
-from . import objective_functions
-from . import exceptions
+from . import exceptions, objective_functions
 
 
 class BaseOptimizer:
@@ -164,7 +163,7 @@ class BaseConvexOptimizer(BaseOptimizer):
                               for portfolios with shorting.
         :type weight_bounds: tuple OR tuple list, optional
         :param solver: name of solver. list available solvers with: ``cvxpy.installed_solvers()``
-        :type solver: str, optional. Defaults to "ECOS"
+        :type solver: str, optional.
         :param verbose: whether performance and debugging info should be printed, defaults to False
         :type verbose: bool, optional
         :param solver_options: parameters for the given solver
@@ -221,8 +220,7 @@ class BaseConvexOptimizer(BaseOptimizer):
             # Otherwise this must be a pair.
             if len(test_bounds) != 2 or not isinstance(test_bounds, (tuple, list)):
                 raise TypeError(
-                    "test_bounds must be a pair (lower bound, upper bound) "
-                    "OR a collection of bounds for each asset"
+                    "test_bounds must be a pair (lower bound, upper bound) OR a collection of bounds for each asset"
                 )
             lower, upper = test_bounds
 
@@ -398,10 +396,10 @@ class BaseConvexOptimizer(BaseOptimizer):
                 "Sector constraints may not produce reasonable results if shorts are allowed."
             )
         for sector in sector_upper:
-            is_sector = [sector_mapper[t] == sector for t in self.tickers]
+            is_sector = [sector_mapper.get(t) == sector for t in self.tickers]
             self.add_constraint(lambda w: cp.sum(w[is_sector]) <= sector_upper[sector])
         for sector in sector_lower:
-            is_sector = [sector_mapper[t] == sector for t in self.tickers]
+            is_sector = [sector_mapper.get(t) == sector for t in self.tickers]
             self.add_constraint(lambda w: cp.sum(w[is_sector]) >= sector_lower[sector])
 
     def convex_objective(self, custom_objective, weights_sum_to_one=True, **kwargs):
@@ -593,10 +591,10 @@ def _get_all_args(expression: cp.Expression) -> List[cp.Expression]:
         return list(_flatten([_get_all_args(arg) for arg in expression.args]))
 
 
-def _flatten(l: Iterable) -> Iterable:
+def _flatten(alist: Iterable) -> Iterable:
     # Helper method to flatten an iterable
-    for el in l:
-        if isinstance(el, Iterable) and not isinstance(el, (str, bytes)):
-            yield from _flatten(el)
+    for v in alist:
+        if isinstance(v, Iterable) and not isinstance(v, (str, bytes)):
+            yield from _flatten(v)
         else:
-            yield el
+            yield v

@@ -1,8 +1,9 @@
-import pandas as pd
 import numpy as np
+import pandas as pd
 import pytest
+
 from pypfopt import expected_returns
-from tests.utilities_for_tests import get_data, get_benchmark_data
+from tests.utilities_for_tests import get_benchmark_data, get_data
 
 
 def test_returns_dataframe():

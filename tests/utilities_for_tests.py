@@ -2,16 +2,15 @@ import os
 
 import numpy as np
 import pandas as pd
-from pypfopt import expected_returns
-from pypfopt import risk_models
+
+from pypfopt import expected_returns, risk_models
+from pypfopt.cla import CLA
 from pypfopt.efficient_frontier import (
+    EfficientCDaR,
+    EfficientCVaR,
     EfficientFrontier,
     EfficientSemivariance,
-    EfficientCVaR,
-    EfficientCDaR,
 )
-from pypfopt.cla import CLA
-from pypfopt.expected_returns import returns_from_prices
 
 
 def resource(name):
@@ -52,75 +51,53 @@ def get_market_caps():
     return mcaps
 
 
-def setup_efficient_frontier(
-    data_only=False, solver=None, verbose=False, solver_options=None
-):
+def setup_efficient_frontier(data_only=False, *args, **kwargs):
     df = get_data()
     mean_return = expected_returns.mean_historical_return(df)
     sample_cov_matrix = risk_models.sample_cov(df)
     if data_only:
         return mean_return, sample_cov_matrix
     return EfficientFrontier(
-        mean_return,
-        sample_cov_matrix,
-        solver=solver,
-        verbose=verbose,
-        solver_options=solver_options,
+        mean_return, sample_cov_matrix, verbose=True, *args, **kwargs
     )
 
 
-def setup_efficient_semivariance(data_only=False, solver=None, verbose=False):
+def setup_efficient_semivariance(data_only=False, *args, **kwargs):
     df = get_data().dropna(axis=0, how="any")
-    mean_return = expected_returns.mean_historical_return(df, compounding=False)
-    historic_returns = returns_from_prices(df)
+    mean_return = expected_returns.mean_historical_return(df)
+    historic_returns = expected_returns.returns_from_prices(df)
     if data_only:
         return mean_return, historic_returns
     return EfficientSemivariance(
-        mean_return, historic_returns, solver=solver, verbose=verbose
+        mean_return, historic_returns, verbose=True, *args, **kwargs
     )
 
 
-def setup_efficient_cvar(
-    data_only=False, solver=None, verbose=False, solver_options=None
-):
+def setup_efficient_cvar(data_only=False, *args, **kwargs):
     df = get_data().dropna(axis=0, how="any")
     mean_return = expected_returns.mean_historical_return(df)
-    historic_returns = returns_from_prices(df)
+    historic_returns = expected_returns.returns_from_prices(df)
     if data_only:
         return mean_return, historic_returns
-    return EfficientCVaR(
-        mean_return,
-        historic_returns,
-        verbose=verbose,
-        solver=solver,
-        solver_options=solver_options,
-    )
+    return EfficientCVaR(mean_return, historic_returns, verbose=True, *args, **kwargs)
 
 
-def setup_efficient_cdar(
-    data_only=False, solver=None, verbose=False, solver_options=None
-):
+def setup_efficient_cdar(data_only=False, *args, **kwargs):
     df = get_data().dropna(axis=0, how="any")
     mean_return = expected_returns.mean_historical_return(df)
-    historic_returns = returns_from_prices(df)
+    historic_returns = expected_returns.returns_from_prices(df)
     if data_only:
         return mean_return, historic_returns
-    return EfficientCDaR(
-        mean_return,
-        historic_returns,
-        verbose=verbose,
-        solver=solver,
-        solver_options=solver_options,
-    )
+    return EfficientCDaR(mean_return, historic_returns, verbose=True, *args, **kwargs)
 
 
-def setup_cla(data_only=False):
+def setup_cla(data_only=False, *args, **kwargs):
     df = get_data()
     mean_return = expected_returns.mean_historical_return(df)
     sample_cov_matrix = risk_models.sample_cov(df)
     if data_only:
         return mean_return, sample_cov_matrix
-    return CLA(mean_return, sample_cov_matrix)
+    return CLA(mean_return, sample_cov_matrix, *args, **kwargs)
 
 
 def simple_ef_weights(expected_returns, cov_matrix, target_return, weights_sum):

@@ -6,6 +6,7 @@ by Marcos Lopez de Prado and David Bailey.
 
 import numpy as np
 import pandas as pd
+
 from . import base_optimizer
 
 
@@ -162,7 +163,7 @@ class CLA(base_optimizer.BaseOptimizer):
         if c == 0:  # pragma: no cover
             return None, None
         # 2) bi
-        if type(bi) == list:
+        if isinstance(bi, list):
             bi = self._compute_bi(c, bi)
         # 3) Lambda
         if wB is None:
@@ -221,7 +222,7 @@ class CLA(base_optimizer.BaseOptimizer):
                     if (
                         self.w[i][j] - self.lB[j] < -tol
                         or self.w[i][j] - self.uB[j] > tol
-                    ):  #  pragma: no cover
+                    ):  # pragma: no cover
                         flag = True
                         break
             if flag is True:

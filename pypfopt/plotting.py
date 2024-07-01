@@ -8,19 +8,18 @@ Currently implemented:
   - ``plot_efficient_frontier`` – plot the efficient frontier from an EfficientFrontier or CLA object
   - ``plot_weights`` - bar chart of weights
 """
-import copy
-import numpy as np
-from . import risk_models, exceptions
-from . import EfficientFrontier, CLA
-import scipy.cluster.hierarchy as sch
 import warnings
 
-try:
-    import matplotlib.pyplot as plt
+import matplotlib.pyplot as plt
+import numpy as np
+import scipy.cluster.hierarchy as sch
 
-    plt.style.use("seaborn-deep")
-except (ModuleNotFoundError, ImportError):  # pragma: no cover
-    raise ImportError("Please install matplotlib via pip or poetry")
+from . import CLA, EfficientFrontier, exceptions, risk_models
+
+try:
+    plt.style.use("seaborn-v0_8-deep")
+except Exception:  # pragma: no cover
+    pass
 
 
 def _plot_io(**kwargs):
@@ -102,7 +101,7 @@ def plot_dendrogram(hrp, ax=None, show_tickers=True, **kwargs):
 
     if hrp.clusters is None:
         warnings.warn(
-            "hrp param has not been optimized.  Attempting optimization.",
+            "hrp param has not been optimized. Attempting optimization.",
             RuntimeWarning,
         )
         hrp.optimize()

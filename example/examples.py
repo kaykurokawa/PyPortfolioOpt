@@ -1,17 +1,16 @@
-import pandas as pd
 import numpy as np
-import cvxpy as cp
-from pypfopt import risk_models
-from pypfopt import expected_returns
-from pypfopt import EfficientFrontier
-from pypfopt import objective_functions
-from pypfopt.discrete_allocation import DiscreteAllocation, get_latest_prices
-from pypfopt import HRPOpt
-from pypfopt import CLA
-from pypfopt import black_litterman
-from pypfopt import BlackLittermanModel
-from pypfopt import plotting
+import pandas as pd
 
+from pypfopt import (
+    CLA,
+    BlackLittermanModel,
+    EfficientFrontier,
+    HRPOpt,
+    black_litterman,
+    expected_returns,
+    plotting,
+    risk_models,
+)
 
 # Reading in the data; preparing expected returns and a risk model
 df = pd.read_csv("tests/resources/stock_prices.csv", parse_dates=True, index_col="date")
@@ -23,7 +22,7 @@ S = risk_models.sample_cov(df)
 # Now try with a nonconvex objective from  Kolm et al (2014)
 def deviation_risk_parity(w, cov_matrix):
     diff = w * np.dot(cov_matrix, w) - (w * np.dot(cov_matrix, w)).reshape(-1, 1)
-    return (diff ** 2).sum().sum()
+    return (diff**2).sum().sum()
 
 
 ef = EfficientFrontier(mu, S)
